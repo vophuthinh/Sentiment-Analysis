@@ -3,8 +3,27 @@ from collections import Counter
 
 import matplotlib.pyplot as plt
 
+
+def get_tweets():
+    import GetOldTweets3 as got
+    tweetCriteria = got.manager.TweetCriteria().setQuerySearch('CoronaOutbreak') \
+        .setSince("2020-01-01") \
+        .setUntil("2020-04-01") \
+        .setMaxTweets(1000)
+    # Creation of list that contains all tweets
+    tweets = got.manager.TweetManager.getTweets(tweetCriteria)
+    # Creating list of chosen tweet data
+    text_tweets = [[tweet.text] for tweet in tweets]
+    return text_tweets
+
+
 # reading text file
-text = open("read.txt", encoding="utf-8").read()
+text = ""
+text_tweets = get_tweets()
+length = len(text_tweets)
+
+for i in range(0, length):
+    text = text_tweets[i][0] + " " + text
 
 # converting to lowercase
 lower_case = text.lower()
@@ -27,34 +46,19 @@ stop_words = ["i", "me", "my", "myself", "we", "our", "ours", "ourselves", "you"
               "too", "very", "s", "t", "can", "will", "just", "don", "should", "now"]
 
 # Removing stop words from the tokenized words list
-final_words = []
-for word in tokenized_words:
-    if word not in stop_words:
-        final_words.append(word)
+final_words = [word for word in tokenized_words if word not in stop_words]
 
-# NLP Emotion Algorithm
-# 1) Check if the word in the final word list is also present in emotion.txt
-#  - open the emotion file
-#  - Loop through each line and clear it
-#  - Extract the word and emotion using split
-
-# 2) If word is present -> Add the emotion to emotion_list
-# 3) Finally count each emotion in the emotion list
-
+# Get emotions text
 emotion_list = []
 with open('emotions.txt', 'r') as file:
     for line in file:
-        clear_line = line.replace("\n", '').replace(",", '').replace("'", '').strip()
+        clear_line = line.replace('\n', '').replace(',', '').replace("'", '').strip()
         word, emotion = clear_line.split(':')
-
         if word in final_words:
             emotion_list.append(emotion)
 
-print(emotion_list)
 w = Counter(emotion_list)
 print(w)
-
-# Plotting the emotions on the graph
 
 fig, ax1 = plt.subplots()
 ax1.bar(w.keys(), w.values())
